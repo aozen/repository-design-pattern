@@ -9,4 +9,5 @@ enum CommentStatus: string
     case PASSIVE = 'passive';
     case PENDING = 'pending';
     case TRASH = 'trash';
+    case ANALYZING = 'analyzing';
 }
