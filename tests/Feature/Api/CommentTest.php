@@ -16,15 +16,17 @@ class CommentTest extends TestCase
         ])->assertSuccessful();
     }
 
-    public function test_updates_a_comment() {
+    public function test_updates_a_comment()
+    {
         $comment = Comment::first();
-        $this->put('/api/comments/' . $comment->id, [
-            'body' => 'update comment | testing repository pattern'
+        $this->put('/api/comments/'.$comment->id, [
+            'body' => 'update comment | testing repository pattern',
         ])->assertSuccessful();
     }
 
-    public function test_delete_a_comment() {
+    public function test_delete_a_comment()
+    {
         $comment = Comment::first();
-        $this->delete('/api/comments/' . $comment->id)->assertSuccessful();
+        $this->delete('/api/comments/'.$comment->id)->assertSuccessful();
     }
 }

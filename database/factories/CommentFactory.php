@@ -15,7 +15,7 @@ class CommentFactory extends Factory
         return [
             'email' => $this->faker->unique()->safeEmail(),
             'body' => $this->faker->paragraph(2),
-            'rate' => $this->faker->numberBetween(1,5),
+            'rate' => $this->faker->numberBetween(1, 5),
             'status' => CommentStatus::DRAFT->value,
         ];
     }
