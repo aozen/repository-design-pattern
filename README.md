@@ -1,66 +1,92 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Repository Design Pattern & Laravel Practice
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+The Repository pattern is a way to organize software code that separates the parts of the code that deal with storing data from the parts of the code that deal with the application's logic.
+This separation makes it easier to focus on one part of the code at a time and to change the way data is stored without affecting the rest of the code.
 
-## About Laravel
+The Repository pattern creates an interface between the application code and the data storage code.
+The interface defines a set of standard methods for storing, retrieving, updating, and deleting data.
+The Repository class provides an implementation of those methods, using whatever storage technology is appropriate, such as a database or a file system.
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+By using the Repository pattern, you can achieve several benefits:
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+1. Keep the application logic separate from the data storage logic.
+2. Put all the data storage code in one place, making it easier to manage and change.
+3. Hide the details of the data storage implementation from the rest of the code.
+4. Make it easier to test the application logic by providing a mock implementation of the repository.
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+## Implementation
 
-## Learning Laravel
+In this project, we use the Repository pattern, which is composed of two parts: an interface and a concrete class that implements it.
+The interface defines a set of standard methods that the application code can use to communicate with the data storage code.
+On the other hand, the concrete class provides the actual implementation of those methods using the Eloquent ORM.
+This allows the application code to interact with the database without having to know the details of the underlying database technology.
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+For example, the `BaseRepositoryInterface` interface defines the methods that can be used to perform CRUD operations on models:
+If these lines apply on `CommentRepositoryInterface`, these methods can perform CRUD operations on `Comment` model.
 
-You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
+```php
+interface BaseRepositoryInterface // Or interface CommentRepositoryInterface
+{
+    public function all(): Collection;
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains over 2000 video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+    public function find(int|string $id): ?stdClass;
 
-## Laravel Sponsors
+    public function create(array $data): stdClass;
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the Laravel [Patreon page](https://patreon.com/taylorotwell).
+    public function update(int|string $id, array $data): ?stdClass;
 
-### Premium Partners
+    public function delete(int|string $id): bool;
+}
+```
 
-- **[Vehikl](https://vehikl.com/)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Cubet Techno Labs](https://cubettech.com)**
-- **[Cyber-Duck](https://cyber-duck.co.uk)**
-- **[Many](https://www.many.co.uk)**
-- **[Webdock, Fast VPS Hosting](https://www.webdock.io/en)**
-- **[DevSquad](https://devsquad.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel/)**
-- **[OP.GG](https://op.gg)**
-- **[WebReinvent](https://webreinvent.com/?utm_source=laravel&utm_medium=github&utm_campaign=patreon-sponsors)**
-- **[Lendio](https://lendio.com)**
+The `BaseRepository` class implements `BaseRepositoryInterface` and provides the actual implementation of these methods using the Eloquent ORM:
 
-## Contributing
+```php
+class BaseRepository implements BaseRepositoryInterface
+{
+    public function __construct(protected Model $model)
+    {
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+    }
 
-## Code of Conduct
+    public function all(): Collection
+    {
+        return $this->model->all();
+    }
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+    public function find(int|string $id): ?stdClass
+    {
+        return (object) $this->model->findOrFail($id)->toArray();
+    }
 
-## Security Vulnerabilities
+    public function create(array $data): stdClass
+    {
+        return $this->model->create([$data])->toArray();
+    }
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+    public function update(string|int $id, array $data): ?stdClass
+    {
+        return (object) tap($this->model->findOrFail($id))->update($data)->toArray();
+    }
 
-## License
+    public function delete(int|string $id): bool
+    {
+        return $this->model->findOrFail($id)->delete();
+    }
+}
+```
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+The `CommentRepository` class implements `CommentRepositoryInterface`, extends `BaseRepository` and provides to use override methods|new methods.
+For example. If you have to pass specific data when data is not passed, this can be handle in CommentRepository.
+
+## USAGE
+
+The repository pattern is useful in the following scenarios:
+
+1. When you need to switch between different data sources, such as a relational database, a NoSQL database, or a web service.
+2. When you need to test the application/business logic in isolation from the data persistence layer.
+3. When you need to encapsulate the complexity of the data persistence layer from the application/business logic.
+4. When you want to provide a consistent interface for the application/business logic to interact with the data persistence layer.
+
+The Repository pattern can make your code easier to understand and maintain by separating different areas of functionality.
+It can also help you make changes to one layer without affecting the other.
